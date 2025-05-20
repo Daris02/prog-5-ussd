@@ -1,13 +1,7 @@
 import * as logger from './utils/logger';
-import {
-  addThings,
-  cancelReservation,
-  makeLocation,
-  showAllThingsReserved,
-  showAllThingsWithState,
-} from './Location';
 import { createInterface } from 'node:readline/promises';
 import { stdin as input, stdout as output } from 'node:process';
+import { depositToAccount, makeWithDraw, showAccount } from './OrangeMoney';
 
 export const readline = createInterface({ input, output });
 const TIMEOUT_DURATION = 10_000;
@@ -20,7 +14,7 @@ async function askWithTimeout(question: string): Promise<string | null> {
         resolve(null);
         logger.logError('\nTimeout! Please try again.');
         readline.close();
-        process.exit(1);
+        process.exit(0);
       }, TIMEOUT_DURATION),
     ),
   ]);
@@ -28,67 +22,48 @@ async function askWithTimeout(question: string): Promise<string | null> {
 
 async function main() {
   logger.log('\n----------------------------');
-  logger.logInfo('Welcome to Locationable');
+  logger.logInfo('Welcome to Orang Money');
   logger.log('----------------------------');
-  logger.log('1. All Things.');
-  logger.log('2. Add Things.');
-  logger.log('3. Make Location.');
-  logger.log('4. Cancel reservation.');
+  logger.log('1. Show My Account.');
+  logger.log('2. Deposit to account.');
+  logger.log('3. Make WithDraw.');
+  logger.log('4. Make Transfert.');
   logger.log('5. Exit.');
   const userInput = await askWithTimeout('Please enter your choice: ');
 
   switch (userInput) {
     case '1': {
-      showAllThingsWithState();
-      const choice = await askWithTimeout('Do you want reserve? (y/n): ');
-      if (choice && choice.toLowerCase() === 'y') {
-        const name = await askWithTimeout('Enter the name of the thing: ');
-        if (!name) {
-          logger.logError('Name are required.');
-          main();
-          break;
-        }
-        makeLocation(name);
-      }
+      showAccount();
       main();
       break;
     }
 
     case '2': {
-      const thingName = await askWithTimeout('Enter the name of the thing (REQUIRED): ');
-      let description = await askWithTimeout('Enter the description of the thing: ');
-      if (!thingName) {
-        logger.logError('Name are required.');
+      const depositAmount = await askWithTimeout('Enter the amount of you want to deposit: ');
+      if (!depositAmount) {
+        logger.logError('Amount are required.');
         main();
         break;
       }
-      if (description === null) description = '';
-      if (!addThings(thingName, description)) logger.logWarning('Please retry again!!!');
+      depositToAccount(parseFloat(depositAmount));
       main();
       break;
     }
 
     case '3': {
-      const reserveName = await askWithTimeout('Enter name of thing you want to reserved: ');
-      if (!reserveName) {
-        logger.logError('Name are required.');
+      const amount = await askWithTimeout('Enter amount: ');
+      if (!amount) {
+        logger.logError('Amount are required.');
         main();
         break;
       }
-      makeLocation(reserveName);
+      makeWithDraw(parseFloat(amount));
       main();
       break;
     }
 
     case '4': {
-      if (showAllThingsReserved() == 0) main();
-      const cancelName = await askWithTimeout('Enter name of thing you want to cancel: ');
-      if (!cancelName) {
-        logger.logError('Name are required.');
-        main();
-        break;
-      }
-      cancelReservation(cancelName);
+      logger.logError('This feature is not implemented yet.');
       main();
       break;
     }
@@ -96,6 +71,7 @@ async function main() {
     case '5':
       logger.log('Goodbye!');
       readline.close();
+      process.exit(0);
       break;
 
     default:
