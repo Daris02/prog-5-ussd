@@ -1,3 +1,5 @@
+import * as logger from './utils/logger';
+
 export class Account {
   private userName: string;
   private balance: number;
@@ -19,7 +21,7 @@ export class Account {
     if (amount > 0) {
       this.balance += amount;
     } else {
-      throw new Error('Deposit amount must be positive');
+      logger.logError('Deposit amount must be positive');
     }
   }
 
@@ -27,7 +29,7 @@ export class Account {
     if (amount > 0 && amount <= this.balance) {
       this.balance -= amount;
     } else {
-      throw new Error('Withdrawal amount must be positive and less than or equal to the balance');
+      logger.logError('Withdrawal amount must be positive and less than or equal to the balance');
     }
   }
 
@@ -36,7 +38,7 @@ export class Account {
       this.withdraw(amount);
       targetAccount.deposit(amount);
     } else {
-      throw new Error('Transfer amount must be positive and less than or equal to the balance');
+      logger.logError('Transfer amount must be positive and less than or equal to the balance');
     }
   }
   toString(): string {
